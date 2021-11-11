@@ -1,90 +1,88 @@
-locals {
-  monitor_enabled = "${var.enabled && length(var.recipients) > 0 ? 1 : 0}"
-}
-
-resource "datadog_timeboard" "asg" {
-  count = "${var.enabled ? 1 : 0}"
+resource "datadog_dashboard" "asg" {
+  count = var.enabled ? 1 : 0
 
   title       = "${var.product_domain} - ${var.cluster} - ${var.environment} - ASG"
   description = "A generated timeboard for ASG"
+  layout_type = "ordered"
 
   template_variable {
-    default = "${var.cluster}"
+    default = var.cluster
     name    = "cluster"
     prefix  = "cluster"
   }
 
   template_variable {
-    default = "${var.environment}"
+    default = var.environment
     name    = "environment"
     prefix  = "environment"
   }
 
-  graph {
-    title     = "Group Size"
-    viz       = "timeseries"
-    autoscale = true
+  widget {
+    timeseries_definition {
+      title = "Group Size"
 
-    request {
-      q    = "avg:aws.autoscaling.group_total_instances{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
-    }
-
-    request {
-      q    = "avg:aws.autoscaling.group_max_size{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
-
-      style {
-        type = "dashed"
+      request {
+        q            = "avg:aws.autoscaling.group_total_instances{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
       }
-    }
 
-    request {
-      q    = "avg:aws.autoscaling.group_min_size{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
+      request {
+        q            = "avg:aws.autoscaling.group_max_size{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
 
-      style {
-        type = "dashed"
+        style {
+          line_type = "dashed"
+        }
       }
-    }
 
-    request {
-      q    = "avg:aws.autoscaling.group_desired_capacity{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
+      request {
+        q            = "avg:aws.autoscaling.group_min_size{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
 
-      style {
-        type = "dashed"
+        style {
+          line_type = "dashed"
+        }
+      }
+
+      request {
+        q            = "avg:aws.autoscaling.group_desired_capacity{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
+
+        style {
+          line_type = "dashed"
+        }
       }
     }
   }
 
-  graph {
-    title     = "Group Instances"
-    viz       = "timeseries"
-    autoscale = true
+  widget {
+    timeseries_definition {
+      title = "Group Instances"
 
-    request {
-      q    = "avg:aws.autoscaling.group_pending_instances{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
-    }
+      request {
+        q            = "avg:aws.autoscaling.group_pending_instances{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
+      }
 
-    request {
-      q    = "avg:aws.autoscaling.group_standby_instances{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
-    }
+      request {
+        q            = "avg:aws.autoscaling.group_standby_instances{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
+      }
 
-    request {
-      q    = "avg:aws.autoscaling.group_terminating_instances{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
-    }
+      request {
+        q            = "avg:aws.autoscaling.group_terminating_instances{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
+      }
 
-    request {
-      q    = "avg:aws.autoscaling.group_total_instances{$cluster, $environment} by {autoscaling_group}"
-      type = "line"
+      request {
+        q            = "avg:aws.autoscaling.group_total_instances{$cluster, $environment} by {autoscaling_group}"
+        display_type = "line"
 
-      style {
-        type = "dotted"
+        style {
+          line_type = "dotted"
+        }
       }
     }
   }
 }
+
